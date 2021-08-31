@@ -1,0 +1,127 @@
+/* 
+ * TODO: put your own comments here. Also you should leave comments on
+ * each of your methods.
+ */
+
+#include <math.h>
+#include "recursion.h"
+#include "map.h"
+#include "vector.h"
+#include "set.h"
+#include "gwindow.h"
+#include "gobjects.h"
+#include "tokenscanner.h"
+#include "queue.h"
+#include "random.h"
+#include "strlib.h"
+
+using namespace std;
+
+int gcd(int a, int b) {
+    // your code here
+    if(b == 0) {
+        cout << "gcd(" << a << " ," << b << ") =" << a << endl;
+        return a;
+    }
+    cout << "gcd(" << a << " ," << b << ") =" << "gcd(" << b <<" ," << a%b << ")" << endl;
+
+    int ans = gcd(b,a%b);
+    return ans;
+}
+
+void serpinskii(GWindow &w, int leftX, int leftY, int size, int order) {
+    // your code here
+    if(order == 0){
+        //todo
+        return;
+    }{
+        //process
+        w.drawLine(leftX,leftY,leftX+size/2,leftY+size*sqrt(3)/2);
+        w.drawLine(leftX,leftY,leftX+size,leftY);
+        w.drawLine(leftX+size,leftY,leftX+size/2,leftY+size*sqrt(3)/2);
+        //recursive process
+        serpinskii(w,leftX,leftY,size/2,order-1);
+        serpinskii(w,leftX +size/2,leftY,size/2,order-1);
+        serpinskii(w,leftX+size/4,leftY+size*sqrt(2)/4,size/2,order-1);
+    }
+}
+
+int floodFillHelper(GBufferedImage& image,int x,int y,int newColof,int oldColor){
+    int currentColor = image.getRGB(x,y);
+    if(!image.inBounds(x,y) || currentColor == newColof || currentColor!=oldColor){
+        return 0;
+    }else{
+        image.setRGB(x,y,newColof);
+        return floodFillHelper(image,x-1,y,newColof,oldColor)
+                + floodFillHelper(image,x+1,y,newColof,oldColor)
+                + floodFillHelper(image,x,y-1,newColof,oldColor)
+                + floodFillHelper(image,x,y+1,newColof,oldColor)
+                +1;
+    }
+}
+int floodFill(GBufferedImage& image, int x, int y, int newColor) {
+    // your code here
+    int num = 0;
+    int oldColor = image.getRGB(x,y);
+    num = floodFillHelper(image,x,y,newColor,oldColor);
+    return num;
+}
+
+void personalCurriculumHelper(Map<string,Vector<string>> & prereqMap,Set<string>& printed,Stack<string>& stack,Queue<string>now){
+    //base case
+    if(now.isEmpty()) return;
+    Queue<string> next;
+    string cur;
+    while(!now.isEmpty()){
+        cur = now.front();
+        //todo
+        stack.push(cur);
+        //explore
+        for(string n:prereqMap[cur]){
+            next.add(n);
+        }
+        now.dequeue();
+    }
+
+    personalCurriculumHelper(prereqMap,printed,stack,next);
+}
+
+void personalCurriculum(Map<string, Vector<string>> & prereqMap,string goal) {
+    // your code here
+    Set<string> s;
+    Queue<string> now;
+    now.add(goal);
+    Stack<string> stack;
+    personalCurriculumHelper(prereqMap,s,stack,now);
+    while(!stack.isEmpty()){
+        string name = stack.top();
+        if(!s.contains(name)){
+            cout << name << endl;
+        }
+
+        s.add(name);
+        stack.pop();
+    }
+}
+
+string generateHelper(Map<string,Vector<string> >& grammar,string symbol){
+    if(!grammar.containsKey(symbol)){
+        return symbol;
+    }
+
+    string random = randomElement(grammar[symbol]);     //选择一种扩张语法
+    Vector<string> part = stringSplit(random," ");      //消去空格加入向量
+
+    string ans;
+    for(string base:part){
+        ans += generateHelper(grammar,base) + " ";
+    }
+
+    return ans;
+}
+
+string generate(Map<string, Vector<string> > & grammar, string symbol) {
+    // your code here
+    string res = generateHelper(grammar,symbol);
+    return res;
+}
